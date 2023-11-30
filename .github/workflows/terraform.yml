@@ -1,22 +1,29 @@
-# Azure Provider
-terraform {
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "=3.0.0"
-    }
-  }
-}
-
-# Configure the Microsoft Azure Provider
-provider "azurerm" {
-  features {
-    #skip_provider_registration = true # This is only required when the User, Service Principal, or Identity running Terraform lacks the permissions to register Azure Resource Providers.
-  }
-}
-
-# resource Group creation
-resource "azurerm_resource_group" "example" {
-  name     = "example"
-  location = "West Europe"
-}
+---
+name: Terraform
+on:
+  push:
+    branches:
+      - main
+  pull_request: null
+permissions:
+  contents: read
+jobs:
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Configure Azure Credentials
+        env:
+          ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+        run: |
+          ls
+          terraform init
+          terraform plan -out=tfplan
+          terraform apply -auto-approve tfplan
+          
